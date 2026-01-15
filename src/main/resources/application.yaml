@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # Thêm tham số để tự động tạo DB nếu chưa có và fix lỗi múi giờ
+    url: jdbc:mysql://localhost:3306/Shop_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    username: root
+    password: nam2502
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      # 'update' sẽ tự động khớp Entity Java với bảng MySQL bạn vừa tạo
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        # Giúp format câu lệnh SQL trong console cho dễ nhìn
+        format_sql: true
+
+  # Tăng kích thước file upload nếu sau này bạn thêm ảnh sản phẩm
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB

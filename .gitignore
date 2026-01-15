@@ -1,6 +1,18 @@
+<<<<<<< HEAD
 target/
 .idea
 .vscode
 *.log
+=======
+/target/
+*.log
+*.class
+*.jar
+*.war
+.idea/
+.vscode/
+*.iml
+.env
+>>>>>>> 1fc6958 (Initial commit)
 application.properties
 application.yml
