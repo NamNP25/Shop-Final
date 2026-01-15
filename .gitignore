@@ -1,9 +1,10 @@
-<<<<<<< HEAD
+HEAD
+ HEAD
 target/
 .idea
 .vscode
 *.log
-=======
+
 /target/
 *.log
 *.class
@@ -13,6 +14,12 @@ target/
 .vscode/
 *.iml
 .env
->>>>>>> 1fc6958 (Initial commit)
+ 1fc6958 (Initial commit)
+
+target/
+.idea
+.vscode
+*.log
+ cf43738 (Add gitignore)
 application.properties
 application.yml
