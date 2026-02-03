@@ -1,0 +1,6 @@
+target/
+.idea
+.vscode
+*.log
+application.properties
+application.yml
