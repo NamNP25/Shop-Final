@@ -1,23 +1,22 @@
 package com.example.Shop.dto;
 
+import lombok.Data;
+
+@Data // Nếu dùng Lombok, nó sẽ tự tạo getRole() cho bạn
 public class UserResponseDTO {
+    private Long id;
     private String username;
-
+    private String fullName;
     private String email;
+    private String role; // THÊM DÒNG NÀY
 
-    public String getUsername() {
-        return username;
+    // Nếu KHÔNG dùng Lombok, bạn phải viết thủ công:
+    /*
+    public String getRole() {
+        return role;
     }
-
-    public void setUsername(String username) {
-        this.username = username;
+    public void setRole(String role) {
+        this.role = role;
     }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    */
 }

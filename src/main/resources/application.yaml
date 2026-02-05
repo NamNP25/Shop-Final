@@ -2,26 +2,31 @@ server:
   port: 8080
 
 spring:
+  # 1. Cấu hình Database
   datasource:
-    # Thêm tham số để tự động tạo DB nếu chưa có và fix lỗi múi giờ
-    url: jdbc:mysql://localhost:3306/Shop_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/shop_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
     username: root
     password: nam2502
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  # 2. Cấu hình Hibernate/JPA
   jpa:
     hibernate:
-      # 'update' sẽ tự động khớp Entity Java với bảng MySQL bạn vừa tạo
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        # Giúp format câu lệnh SQL trong console cho dễ nhìn
-        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
-  # Tăng kích thước file upload nếu sau này bạn thêm ảnh sản phẩm
-  servlet:
-    multipart:
-      max-file-size: 2MB
-      max-request-size: 2MB
+  # 3. Cấu hình Thymeleaf (Tắt cache để sửa HTML là thấy thay đổi ngay)
+  thymeleaf:
+    cache: false
+
+# 4. Biến upload path (Sửa lỗi Placeholder)
+upload:
+  path: uploads
+
+# 5. Bật Log Debug Security (Để kiểm tra luồng Role/Login)
+logging:
+  level:
+    org.springframework.security: DEBUG

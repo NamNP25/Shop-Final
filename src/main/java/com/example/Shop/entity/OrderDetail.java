@@ -1,15 +1,17 @@
 package com.example.Shop.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 @Entity
-@Table(name = "order_items")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
-public class OrderItem {
+@Data
+public class OrderDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private Double price;
+    private Integer quantity;
 
     @ManyToOne
     @JoinColumn(name = "order_id")
@@ -18,7 +20,4 @@ public class OrderItem {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
-
-    private Integer quantity;
-    private Double price;
 }

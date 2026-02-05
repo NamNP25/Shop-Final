@@ -28,28 +28,33 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
     }
 
+    // 1. Hàm lưu dùng cho API hoặc Logic phức tạp (Dùng DTO)
     public Product saveProduct(ProductRequest request) {
-        if (request.getCategoryId() == null) {
-            throw new RuntimeException("Lỗi: categoryId không được để trống!");
-        }
-
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Danh mục không tồn tại với ID: " + request.getCategoryId()));
-
         Product product = new Product();
         product.setName(request.getName());
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
-        product.setCategory(category);
+        product.setDescription(request.getDescription());
+        product.setImage(request.getImageUrl());
 
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Danh mục không tồn tại với ID: " + request.getCategoryId()));
+            product.setCategory(category);
+        }
         return productRepository.save(product);
+    }
+
+    // 2. Hàm lưu bổ sung để khớp với gọi lệnh từ Controller (Sửa lỗi Cannot resolve method 'save')
+    // Chúng ta đặt tên là save() để Controller gọi productService.save(product) hoạt động ngay
+    public void save(Product product) {
+        productRepository.save(product);
     }
 
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }
 
-    // Các hàm tìm kiếm và lọc (Chỉ giữ lại 1 bản duy nhất)
     public List<Product> searchByName(String name) {
         return productRepository.findByNameContainingIgnoreCase(name);
     }
@@ -57,5 +62,4 @@ public class ProductService {
     public List<Product> getByCategoryId(Long categoryId) {
         return productRepository.findByCategoryId(categoryId);
     }
-
-} // <--- Dấu này cực kỳ quan trọng để kết thúc Class
+}

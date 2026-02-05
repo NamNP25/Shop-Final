@@ -1,22 +1,21 @@
 package com.example.Shop.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.ToString;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "categories")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Data
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    @JsonIgnore // Ngăn vòng lặp vô hạn khi trả về JSON
+    @OneToMany(mappedBy = "category")
+    @ToString.Exclude // Quan trọng: Ngăn vòng lặp vô tận khi in log hoặc render
     private List<Product> products;
 }

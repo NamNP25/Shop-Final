@@ -1,21 +1,15 @@
 package com.example.Shop.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+import lombok.Data;
+
+@Data
 public class ProductRequest {
     private String name;
     private Double price;
     private Integer stock;
-    private Long categoryId; // Tên biến phải là categoryId
-
-    // Getter và Setter thủ công (Chuột phải -> Generate -> Getter and Setter)
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
-
-    public Integer getStock() { return stock; }
-    public void setStock(Integer stock) { this.stock = stock; }
-
-    public Long getCategoryId() { return categoryId; }
-    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+    private String description;
+    private String imageUrl; // Nhận link ảnh dán vào
+    private MultipartFile imageFile; // Nhận file upload
+    private Long categoryId; // Quan trọng: Fix lỗi image_721d8c
 }
