@@ -2,67 +2,163 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Quản trị kho - Shop 2026</title>
+    <title>Quản trị kho - Shop Nam Phương</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        .img-table { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+        .img-table { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
         .navbar-admin { background-color: #0d6efd; }
+        .badge-category { font-size: 0.75rem; margin-right: 2px; }
+        .table thead { background-color: #f8f9fa; }
     </style>
 </head>
 <body class="bg-light">
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-admin shadow mb-4">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="/admin/products">ADMIN PANEL</a>
-        <div class="ms-auto d-flex align-items-center">
-            <a href="/" class="btn btn-light btn-sm me-3"><i class="bi bi-house"></i> Về Trang Chủ</a>
+        <a class="navbar-brand fw-bold" href="/admin/products">ADMIN PANEL - SHOP Nam Phương</a>
+        <div class="ms-auto">
+            <a href="/" class="btn btn-light btn-sm me-2">Về trang bán hàng</a>
             <a href="/logout" class="btn btn-danger btn-sm">Thoát</a>
         </div>
     </div>
 </nav>
 
-<div class="container py-2">
+<div class="container pb-5">
+    <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> <span th:text="${successMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> <span th:text="${errorMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
     <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-            <h5 class="mb-0 fw-bold">QUẢN LÝ KHO HÀNG</h5>
-            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addModal">
-                <i class="bi bi-plus-circle"></i> Nhập hàng mới
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom">
+            <h5 class="mb-0 fw-bold">DANH SÁCH SẢN PHẨM</h5>
+            <button class="btn btn-primary btn-sm px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+                <i class="bi bi-plus-lg"></i> THÊM MỚI
             </button>
         </div>
         <div class="card-body p-0">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                <tr>
-                    <th class="ps-3">ID</th>
-                    <th>Ảnh</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Giá niêm yết</th>
-                    <th class="text-center">Thao tác</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="p : ${products}">
-                    <td class="ps-3" th:text="${p.id}"></td>
-                    <td>
-                        <img th:src="${p.image != null} ? @{'/images/' + ${p.image}} : 'https://via.placeholder.com/50'" class="img-table">
-                    </td>
-                    <td th:text="${p.name}" class="fw-bold"></td>
-                    <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT') + 'đ'}"></td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-primary btn-edit" th:data-id="${p.id}" th:data-name="${p.name}" th:data-price="${p.price}">Sửa</button>
-                        <a th:href="@{/admin/products/delete/{id}(id=${p.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Xóa?')">Xóa</a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-center">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Giá</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${products}">
+                        <td th:text="${p.id}"></td>
+                        <td>
+                            <img th:src="${p.image != null} ? @{'/images/' + ${p.image}} : '/images/default.jpg'" class="img-table shadow-sm">
+                        </td>
+                        <td th:text="${p.name}" class="fw-bold text-dark"></td>
+                        <td>
+                            <span th:each="cat : ${p.categories}"
+                                  class="badge bg-info text-dark badge-category"
+                                  th:text="${cat.name}"></span>
+                            <span th:if="${#lists.isEmpty(p.categories)}" class="text-muted small">Chưa phân loại</span>
+                        </td>
+                        <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT') + 'đ'}" class="text-danger fw-bold"></td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary btn-edit"
+                                        th:data-id="${p.id}"
+                                        th:data-name="${p.name}"
+                                        th:data-price="${p.price}">Sửa</button>
+                                <a th:href="@{/admin/products/delete/{id}(id=${p.id})}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Bạn có chắc chắn muốn ẩn sản phẩm này?')">Xóa</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(products)}">
+                        <td colspan="6" class="py-4 text-muted">Kho hàng đang trống. Hãy thêm sản phẩm mới!</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form th:action="@{/admin/products/add}" method="post" enctype="multipart/form-data" class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold" id="addModalLabel">THÊM SẢN PHẨM MỚI</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tên sản phẩm</label>
+                    <input type="text" name="name" class="form-control" placeholder="Ví dụ: iPhone 15 Pro Max" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Giá bán (VNĐ)</label>
+                    <input type="number" name="price" class="form-control" placeholder="Ví dụ: 25000000" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Danh mục (Chọn nhiều bằng phím Ctrl)</label>
+                    <select name="categoryIds" class="form-select" multiple size="4">
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Hình ảnh</label>
+                    <input type="file" name="imageFile" class="form-control" accept="image/*" required>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" class="btn btn-success btn-sm px-4">Lưu sản phẩm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form th:action="@{/admin/products/edit}" method="post" enctype="multipart/form-data" class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold">CẬP NHẬT THÔNG TIN</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="id" id="edit-id">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tên sản phẩm</label>
+                    <input type="text" name="name" id="edit-name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Giá bán</label>
+                    <input type="number" name="price" id="edit-price" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Hình ảnh mới (Để trống nếu giữ nguyên)</label>
+                    <input type="file" name="imageFile" class="form-control" accept="image/*">
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="submit" class="btn btn-primary btn-sm px-4">Cập nhật ngay</button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // Logic gán dữ liệu vào Modal Sửa
     $(document).on("click", ".btn-edit", function() {
         $("#edit-id").val($(this).data('id'));
         $("#edit-name").val($(this).data('name'));

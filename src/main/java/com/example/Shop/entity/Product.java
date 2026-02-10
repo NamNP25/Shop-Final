@@ -1,39 +1,33 @@
 package com.example.Shop.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "products")
+@Data
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
     private Double price;
-    private Integer stock;
-    private String description;
     private String image;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @Column(nullable = false)
+    private Integer stock = 0;
 
-    // Constructor
-    public Product() {}
+    @Column(nullable = false)
+    private boolean deleted = false;
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
-    public Integer getStock() { return stock; }
-    public void setStock(Integer stock) { this.stock = stock; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public String getImage() { return image; }
-    public void setImage(String image) { this.image = image; }
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
+    // Sử dụng EAGER để load danh mục ngay lập tức, tránh lỗi 500
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "product_category",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private List<Category> categories = new ArrayList<>();
 }

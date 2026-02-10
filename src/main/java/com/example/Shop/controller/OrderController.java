@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,23 +25,27 @@ public class OrderController {
     @PostMapping("/checkout")
     public String checkout(HttpSession session,
                            Authentication authentication,
-                           @ModelAttribute Order order) { // Dùng @ModelAttribute thay cho @RequestParam
+                           @RequestParam String customerName,
+                           @RequestParam String phoneNumber,
+                           @RequestParam String address,
+                           RedirectAttributes redirectAttributes) {
 
-        // 1. Lấy giỏ hàng từ session
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
-        if (cart == null || cart.isEmpty()) {
-            return "redirect:/cart?error=empty_cart";
-        }
+        if (cart == null || cart.isEmpty()) return "redirect:/cart";
 
-        // 2. Lấy User đang đăng nhập và gắn vào order
         User user = userRepository.findByUsername(authentication.getName()).orElse(null);
-        order.setUser(user);
 
-        // 3. Tính tổng tiền
+        Order order = new Order();
+        order.setUser(user);
+        order.setCustomerName(customerName);
+        order.setPhoneNumber(phoneNumber);
+        order.setAddress(address);
+        order.setOrderDate(LocalDateTime.now());
+        order.setStatus("PENDING");
+
         double total = cart.stream().mapToDouble(item -> item.getPrice() * item.getQuantity()).sum();
         order.setTotalAmount(total);
 
-        // 4. Chuyển CartItem sang OrderItem
         List<OrderItem> orderItems = new ArrayList<>();
         for (CartItem ci : cart) {
             OrderItem oi = new OrderItem();
@@ -51,12 +57,10 @@ public class OrderController {
         }
         order.setOrderItems(orderItems);
 
-        // 5. Lưu vào Database
         orderRepository.save(order);
-
-        // 6. Xóa giỏ hàng
         session.removeAttribute("cart");
 
-        return "redirect:/?success=order_ok";
+        redirectAttributes.addFlashAttribute("successMsg", "Đặt hàng thành công!");
+        return "redirect:/";
     }
 }

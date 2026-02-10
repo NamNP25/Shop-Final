@@ -2,11 +2,9 @@ package com.example.Shop.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.ToString;
 import java.util.List;
 
 @Entity
-@Table(name = "categories")
 @Data
 public class Category {
     @Id
@@ -15,7 +13,6 @@ public class Category {
 
     private String name;
 
-    @OneToMany(mappedBy = "category")
-    @ToString.Exclude // Quan trọng: Ngăn vòng lặp vô tận khi in log hoặc render
+    @ManyToMany(mappedBy = "categories") // ánh xạ từ biến 'categories' bên Product
     private List<Product> products;
 }

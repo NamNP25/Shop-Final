@@ -30,3 +30,19 @@ upload:
 logging:
   level:
     org.springframework.security: DEBUG
+
+# 6. Cấu hình Swagger
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  show-actuator: true
+  scanner: # Cho phép Swagger hiển thị cả @Controller
+    controller:
+      enabled: true
+    openapi:
+      info:
+        title: "HỆ THỐNG QUẢN LÝ SHOP 2026"
+        description: "Dự án cá nhân - Quản lý kho hàng và bán hàng"
+        version: "1.0.0"

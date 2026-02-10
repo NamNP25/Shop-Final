@@ -15,7 +15,7 @@ public class HomeController {
     @GetMapping("/")
     public String trangChu(Model model) {
         // Lấy tất cả sản phẩm để hiển thị ở trang chủ
-        model.addAttribute("products", productRepository.findAll());
+        model.addAttribute("products", productRepository.findByDeletedFalse());
         return "index"; // Trỏ về file index.html
     }
 }
