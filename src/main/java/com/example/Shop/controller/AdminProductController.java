@@ -47,7 +47,7 @@ public class AdminProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Thêm mới sản phẩm", description = "Lưu sản phẩm và upload ảnh mới")
+    @Operation(summary = "Thêm mới sản phẩm", description = "Thêm mới sản phẩm  , chỉ admin mới có quyền")
     @PostMapping("/add")
     public String addProduct(@ModelAttribute Product product,
                              @RequestParam("imageFile") MultipartFile imageFile,
@@ -57,7 +57,7 @@ public class AdminProductController {
         return "redirect:/admin/products";
     }
 
-    @Operation(summary = "Cập nhật sản phẩm", description = "Cập nhật thông tin sản phẩm đã có")
+    @Operation(summary = "Cập nhật sản phẩm", description = "Cập nhật thông tin sản phẩm đã có ,chỉ admin mới có quyền")
     @PostMapping("/edit")
     public String editProduct(@ModelAttribute Product product,
                               @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
@@ -67,7 +67,7 @@ public class AdminProductController {
         return "redirect:/admin/products";
     }
 
-    @Operation(summary = "Xóa sản phẩm (Soft Delete)", description = "Ẩn sản phẩm khỏi hệ thống")
+    @Operation(summary = "Xóa sản phẩm (Soft Delete)", description = "Xóa sản phẩm khỏi hệ thống")
     @GetMapping("/delete/{id}")
     public String deleteProduct(@PathVariable Long id, RedirectAttributes ra) {
         productRepository.findById(id).ifPresent(p -> {
