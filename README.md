@@ -36,7 +36,7 @@ Dự án được xây dựng theo mô hình MVC và sử dụng Spring Data JPA
 ### 🛍 Order Management
 - Thêm sản phẩm vào giỏ hàng
 - Tạo đơn hàng
-- Xem lịch sử đơn hàng
+
 
 ---
 
