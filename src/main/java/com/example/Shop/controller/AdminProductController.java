@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.File;
 import java.nio.file.*;
 import java.util.Arrays;
+import java.util.List;
 
 @Tag(name = "Sản phẩm Admin", description = "Quản lý kho hàng cho dự án Shop")
 @Controller
@@ -47,7 +48,7 @@ public class AdminProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Thêm mới sản phẩm", description = "Thêm mới sản phẩm  , chỉ admin mới có quyền")
+    @Operation(summary = "Thêm mới sản phẩm", description = "Thêm mới sản phẩm, chỉ admin mới có quyền")
     @PostMapping("/add")
     public String addProduct(@ModelAttribute Product product,
                              @RequestParam("imageFile") MultipartFile imageFile,
@@ -57,7 +58,7 @@ public class AdminProductController {
         return "redirect:/admin/products";
     }
 
-    @Operation(summary = "Cập nhật sản phẩm", description = "Cập nhật thông tin sản phẩm đã có ,chỉ admin mới có quyền")
+    @Operation(summary = "Cập nhật sản phẩm", description = "Cập nhật thông tin sản phẩm đã có, chỉ admin mới có quyền")
     @PostMapping("/edit")
     public String editProduct(@ModelAttribute Product product,
                               @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
@@ -78,6 +79,17 @@ public class AdminProductController {
         return "redirect:/admin/products";
     }
 
+    // --- Cập nhật thêm tính năng bổ trợ cho Quản lý sản phẩm ---
+
+    @Operation(summary = "Lấy danh sách sản phẩm dạng JSON", description = "Dùng cho các chức năng bảng nâng cao hoặc Ajax")
+    @GetMapping("/api/list")
+    @ResponseBody
+    public List<Product> listProductsApi() {
+        return productRepository.findByDeletedFalse();
+    }
+
+    // --- Logic dùng chung giữ nguyên ---
+
     private void processSave(Product product, MultipartFile imageFile, Long[] categoryIds, RedirectAttributes ra, String msg) {
         try {
             if (imageFile != null && !imageFile.isEmpty()) {
@@ -87,11 +99,14 @@ public class AdminProductController {
                 Files.copy(imageFile.getInputStream(), Paths.get(UPLOAD_DIR + fileName), StandardCopyOption.REPLACE_EXISTING);
                 product.setImage(fileName);
             } else if (product.getId() != null) {
+                // Giữ lại ảnh cũ nếu không upload ảnh mới khi Sửa
                 productRepository.findById(product.getId()).ifPresent(old -> product.setImage(old.getImage()));
             }
+
             if (categoryIds != null) {
                 product.setCategories(categoryRepository.findAllById(Arrays.asList(categoryIds)));
             }
+
             product.setDeleted(false);
             productRepository.save(product);
             ra.addFlashAttribute("successMsg", msg);

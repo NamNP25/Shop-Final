@@ -1,79 +1,78 @@
 package com.example.Shop.controller;
 
 import com.example.Shop.dto.CartItem;
-import com.example.Shop.entity.Product;
-import com.example.Shop.repository.ProductRepository;
-import jakarta.servlet.http.HttpServletRequest;
+import com.example.Shop.service.CartService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/cart")
 public class CartController {
 
-    @Autowired private ProductRepository productRepository;
+    @Autowired
+    private CartService cartService;
 
-    @GetMapping("/add/{id}")
-    public String addToCart(@PathVariable Long id,
-                            HttpSession session,
-                            HttpServletRequest request,
-                            RedirectAttributes redirectAttributes) {
-
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
-        if (cart == null) {
-            cart = new ArrayList<>();
-        }
-
-        Product product = productRepository.findById(id).orElseThrow();
-
-        boolean isExist = false;
-        for (CartItem item : cart) {
-            if (item.getProductId().equals(id)) {
-                item.setQuantity(item.getQuantity() + 1);
-                isExist = true;
-                break;
-            }
-        }
-
-        if (!isExist) {
-            cart.add(new CartItem(product.getId(), product.getName(), product.getPrice(), 1, product.getImage()));
-        }
-
-        session.setAttribute("cart", cart);
-
-        // Thông báo nhỏ hiện lên ở trang hiện tại
-        redirectAttributes.addFlashAttribute("cartMsg", "Đã thêm " + product.getName() + " vào giỏ hàng!");
-
-        // Quay lại trang cũ (Referer)
-        String referer = request.getHeader("Referer");
-        return "redirect:" + (referer != null ? referer : "/");
-    }
-
+    // 1. Xem giỏ hàng
     @GetMapping
-    public String viewCart(HttpSession session, Model model) {
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
-        double total = 0;
-        if (cart != null) {
-            total = cart.stream().mapToDouble(i -> i.getPrice() * i.getQuantity()).sum();
-        }
-        model.addAttribute("cart", cart);
-        model.addAttribute("total", total);
-        return "cart";
+    public String viewCart(Model model, HttpSession session) {
+        Map<Long, CartItem> cart = cartService.getCart(session);
+        model.addAttribute("cartItems", cart.values()); // Chuyển Map thành List để Thymeleaf dễ duyệt
+        model.addAttribute("totalAmount", cart.values().stream()
+                .mapToDouble(item -> item.getPrice() * item.getQuantity()).sum());
+        return "cart"; // Trả về file cart.html
     }
 
+    // 2. Thêm sản phẩm vào giỏ
+    @GetMapping("/add/{id}")
+    public String addToCart(@PathVariable Long id, HttpSession session, RedirectAttributes ra) {
+        try {
+            cartService.addToCart(id, session);
+            ra.addFlashAttribute("successMsg", "Đã thêm vào giỏ hàng!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", "Không thể thêm sản phẩm!");
+        }
+        return "redirect:/"; // Quay lại trang chủ hoặc trang sản phẩm
+    }
+
+    // 3. Xóa sản phẩm khỏi giỏ
     @GetMapping("/remove/{id}")
     public String removeFromCart(@PathVariable Long id, HttpSession session) {
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
-        if (cart != null) {
-            cart.removeIf(item -> item.getProductId().equals(id));
-        }
+        cartService.removeFromCart(id, session);
         return "redirect:/cart";
+    }
+
+    // 4. Cập nhật số lượng qua AJAX (Giống đoạn code bạn gửi nhưng chuẩn hóa Map)
+    @PostMapping("/update-quantity") // Sửa từ /update thành /update-quantity
+    @ResponseBody
+    public ResponseEntity<?> updateQuantity(@RequestParam Long id, @RequestParam Integer qty, HttpSession session) {
+        try {
+            CartItem updatedItem = cartService.updateQuantity(id, qty, session);
+
+            Map<String, Object> response = new HashMap<>();
+            // Nếu qty < 1, item bị xóa khỏi Map, trả về removed: true để JS xóa dòng đó trên giao diện
+            if (updatedItem == null) {
+                response.put("removed", true);
+            } else {
+                response.put("newQty", updatedItem.getQuantity());
+                response.put("itemTotal", updatedItem.getTotalPrice());
+            }
+
+            // Tính lại tổng cộng cả giỏ hàng
+            double cartTotal = cartService.getCart(session).values().stream()
+                    .mapToDouble(CartItem::getTotalPrice).sum();
+            response.put("cartTotal", cartTotal);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi cập nhật: " + e.getMessage());
+        }
     }
 }

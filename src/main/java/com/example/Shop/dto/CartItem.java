@@ -1,16 +1,37 @@
 package com.example.Shop.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
 public class CartItem {
-    private Long productId; // Số 1
-    private String name;      // Số 2
-    private Double price;     // Số 3
-    private int quantity;     // Số 4
-    private String image;     // Số 5
+    private Long productId;
+    private String name;
+    private Double price;
+    private int quantity;
+    private String image;
+
+    // Constructor thủ công để CartService gọi không bị lỗi
+    public CartItem(Long productId, String name, Double price, int quantity, String image) {
+        this.productId = productId;
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+        this.image = image;
+    }
+
+    // Getter/Setter viết tay để đảm bảo IDE nhận diện 100%
+    public Long getProductId() { return productId; }
+    public String getName() { return name; }
+    public Double getPrice() { return price; }
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
+    public String getImage() { return image; }
+
+    public Double getTotalPrice() {
+        return (this.price != null) ? this.price * this.quantity : 0.0;
+    }
 }

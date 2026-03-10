@@ -35,7 +35,8 @@ public class Order {
 
     private String status; // PENDING, SHIPPING, DELIVERED
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    // Trong file Order.java
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @PrePersist

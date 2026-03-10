@@ -51,6 +51,7 @@
                         <th>Tên sản phẩm</th>
                         <th>Danh mục</th>
                         <th>Giá</th>
+                        <th>Kho</th>
                         <th>Thao tác</th>
                     </tr>
                     </thead>
@@ -60,7 +61,7 @@
                         <td>
                             <img th:src="${p.image != null} ? @{'/images/' + ${p.image}} : '/images/default.jpg'" class="img-table shadow-sm">
                         </td>
-                        <td th:text="${p.name}" class="fw-bold text-dark"></td>
+                        <td th:text="${p.name}" class="fw-bold text-dark text-start"></td>
                         <td>
                             <span th:each="cat : ${p.categories}"
                                   class="badge bg-info text-dark badge-category"
@@ -68,12 +69,10 @@
                             <span th:if="${#lists.isEmpty(p.categories)}" class="text-muted small">Chưa phân loại</span>
                         </td>
                         <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT') + 'đ'}" class="text-danger fw-bold"></td>
+                        <td th:text="${p.stock}"></td>
                         <td>
                             <div class="btn-group">
-                                <button class="btn btn-sm btn-outline-primary btn-edit"
-                                        th:data-id="${p.id}"
-                                        th:data-name="${p.name}"
-                                        th:data-price="${p.price}">Sửa</button>
+                                <button class="btn btn-sm btn-outline-primary btn-edit" th:onclick="'loadProductData(' + ${p.id} + ')'">Sửa</button>
                                 <a th:href="@{/admin/products/delete/{id}(id=${p.id})}"
                                    class="btn btn-sm btn-outline-danger"
                                    onclick="return confirm('Bạn có chắc chắn muốn ẩn sản phẩm này?')">Xóa</a>
@@ -81,7 +80,7 @@
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(products)}">
-                        <td colspan="6" class="py-4 text-muted">Kho hàng đang trống. Hãy thêm sản phẩm mới!</td>
+                        <td colspan="7" class="py-4 text-muted">Kho hàng đang trống. Hãy thêm sản phẩm mới!</td>
                     </tr>
                     </tbody>
                 </table>
@@ -90,24 +89,30 @@
     </div>
 </div>
 
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <form th:action="@{/admin/products/add}" method="post" enctype="multipart/form-data" class="modal-content border-0 shadow">
             <div class="modal-header bg-success text-white">
-                <h5 class="modal-title fw-bold" id="addModalLabel">THÊM SẢN PHẨM MỚI</h5>
+                <h5 class="modal-title fw-bold">THÊM SẢN PHẨM MỚI</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Tên sản phẩm</label>
-                    <input type="text" name="name" class="form-control" placeholder="Ví dụ: iPhone 15 Pro Max" required>
+                    <input type="text" name="name" class="form-control" placeholder="Ví dụ: iPhone 15" required>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <label class="form-label fw-bold">Giá bán (VNĐ)</label>
+                        <input type="number" name="price" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label class="form-label fw-bold">Số lượng kho</label>
+                        <input type="number" name="stock" class="form-control" value="0">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Giá bán (VNĐ)</label>
-                    <input type="number" name="price" class="form-control" placeholder="Ví dụ: 25000000" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Danh mục (Chọn nhiều bằng phím Ctrl)</label>
+                    <label class="form-label fw-bold">Danh mục</label>
                     <select name="categoryIds" class="form-select" multiple size="4">
                         <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
                     </select>
@@ -138,12 +143,18 @@
                     <label class="form-label fw-bold">Tên sản phẩm</label>
                     <input type="text" name="name" id="edit-name" class="form-control" required>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Giá bán</label>
-                    <input type="number" name="price" id="edit-price" class="form-control" required>
+                <div class="row mb-3">
+                    <div class="col">
+                        <label class="form-label fw-bold">Giá bán</label>
+                        <input type="number" name="price" id="edit-price" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label class="form-label fw-bold">Số lượng kho</label>
+                        <input type="number" name="stock" id="edit-stock" class="form-control">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Hình ảnh mới (Để trống nếu giữ nguyên)</label>
+                    <label class="form-label fw-bold">Hình ảnh mới (Để trống để giữ ảnh cũ)</label>
                     <input type="file" name="imageFile" class="form-control" accept="image/*">
                 </div>
             </div>
@@ -157,14 +168,26 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-    // Logic gán dữ liệu vào Modal Sửa
-    $(document).on("click", ".btn-edit", function() {
-        $("#edit-id").val($(this).data('id'));
-        $("#edit-name").val($(this).data('name'));
-        $("#edit-price").val($(this).data('price'));
-        $('#editModal').modal('show');
-    });
+    // Hàm gọi Ajax lấy dữ liệu từ API /admin/products/get/{id} trong APC
+    function loadProductData(id) {
+        $.ajax({
+            url: '/admin/products/get/' + id,
+            type: 'GET',
+            success: function(product) {
+                $('#edit-id').val(product.id);
+                $('#edit-name').val(product.name);
+                $('#edit-price').val(product.price);
+                $('#edit-stock').val(product.stock);
+
+                $('#editModal').modal('show');
+            },
+            error: function() {
+                alert("Không thể lấy dữ liệu sản phẩm!");
+            }
+        });
+    }
 </script>
 </body>
 </html>
